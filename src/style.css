@@ -1,0 +1,4 @@
+@font-face { font-family: Inter; src: local('Inter'); }
+* { box-sizing: border-box; }
+body { font-family: system-ui, Inter, Arial, sans-serif; color:#fff; background:#1f1f1f; }
+a { color: inherit; }
