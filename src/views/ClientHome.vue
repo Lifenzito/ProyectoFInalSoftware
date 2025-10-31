@@ -1,9 +1,12 @@
 <!-- src/views/ClientHome.vue -->
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { auth, db } from '../firebase/config'
 import { onAuthStateChanged } from 'firebase/auth'
 import { collection, query, orderBy, limit, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore'
+
+const router = useRouter()
 
 /* ========= LocalStorage keys ========= */
 const LS = {
@@ -204,6 +207,7 @@ const clientPhone    = ref(readLS(LS.phone, ''))
 watch(clientLocation, v => writeLS(LS.loc, v))
 watch(clientPhone,    v => writeLS(LS.phone, v))
 
+// ✅ Checkout con verificación de sesión y buyerId/buyerEmail
 async function checkout(){
   if (!clientLocation.value?.trim() || !clientPhone.value?.trim()) {
     alert('Por favor ingresa tu ubicación en el campus y tu teléfono.')
@@ -214,18 +218,30 @@ async function checkout(){
     return
   }
 
+  // Verificar sesión
+  const user = auth.currentUser
+  if (!user) {
+    alert('Debes iniciar sesión para poder comprar.')
+    router.push('/login')
+    return
+  }
+
   const bySeller = new Map()
   for (const it of cart.value) {
     if (!bySeller.has(it.sellerId)) bySeller.set(it.sellerId, [])
     bySeller.get(it.sellerId).push(it)
   }
 
-  const clientEmail = auth.currentUser?.email || 'anon'
+  const clientEmail = user.email || 'anon'
+  const buyerId = user.uid
   const created = []
+
   for (const [sellerId, items] of bySeller.entries()) {
     const total = items.reduce((a,b)=> a + b.price * (b.quantity||1), 0)
     const payload = {
       sellerId,
+      buyerId,
+      buyerEmail: clientEmail,
       items: items.map(i => ({ id: i.id, title: i.title, price: i.price, quantity: i.quantity || 1 })),
       total,
       clientEmail,
@@ -267,6 +283,7 @@ async function checkout(){
 
   clearCart()
   cartOpen.value = false
+  alert('Pedido enviado ✅')
 }
 
 /* ========= ciclo de vida ========= */
@@ -379,7 +396,7 @@ function next(refEl){ refEl?.value?.scrollBy({ left:  STEP, behavior: 'smooth' }
         <button
           v-show="saladosAr.right"
           @click="next(saladosRef)"
-          class="hidden sm:grid place-items-center absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border border-neutral-700 bg-neutral-800/90 hover:bg-red-600 hover:border-red-600 z-20">
+          class="hidden sm/grid place-items-center absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border border-neutral-700 bg-neutral-800/90 hover:bg-red-600 hover:border-red-600 z-20">
           ›
         </button>
       </div>
@@ -419,7 +436,7 @@ function next(refEl){ refEl?.value?.scrollBy({ left:  STEP, behavior: 'smooth' }
         <button
           v-show="noComAr.right"
           @click="next(noComRef)"
-          class="hidden sm:grid place-items-center absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border border-neutral-700 bg-neutral-800/90 hover:bg-red-600 hover:border-red-600 z-20">
+          class="hidden sm/grid place-items-center absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border border-neutral-700 bg-neutral-800/90 hover:bg-red-600 hover:border-red-600 z-20">
           ›
         </button>
       </div>

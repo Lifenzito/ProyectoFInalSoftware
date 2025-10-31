@@ -206,8 +206,8 @@ onMounted(() => {
   unsubAuth = onAuthStateChanged(auth, async (u) => {
     if (!u) return router.replace('/')
 
-    currentUser.value = u
-    const keys = LS_KEYS(u.uid)
+    currentUser.value = u // ← Aquí se guarda el usuario autenticado
+    const keys = LS_KEYS(u.uid) // ← Aquí se usa el UID del usuario logueado
 
     // hidrata desde cache (rápido)
     const cachedProfile  = readJSON(keys.profile)
@@ -309,7 +309,7 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-    </section>
+    </section>est
   </main>
 </template>
 
