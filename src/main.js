@@ -1,11 +1,14 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
 
-// (opcional) si tienes style.css
 import './style.css'
-
-// ✅ importa Tailwind **arriba**, junto con los demás
 import './assets/tailwind.css'
 
-createApp(App).use(router).mount('#app')
+const rootElement = document.getElementById('root')
+
+if (rootElement) {
+	ReactDOM.createRoot(rootElement).render(
+		React.createElement(React.StrictMode, null, React.createElement(App))
+	)
+}
